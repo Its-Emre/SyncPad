@@ -2,7 +2,9 @@
 
 A **real-time collaborative editor** for code and notes: multiple people type in the same document at the same time, see each other's cursors live, and the document never diverges — built on a **CRDT (Yjs)** and the **Monaco** editor (the engine inside VS Code).
 
-> **Status:** Sprint 3 complete — **rooms now survive anything**: every CRDT update is persisted to MongoDB, so a document is rebuilt exactly after a server restart, an offline editor's changes merge on reconnect, and nothing is lost. Deployment is Sprint 4.
+> **🔴 Live:** [sync-pad-tawny.vercel.app](https://sync-pad-tawny.vercel.app) · API at [syncpad-4k8d.onrender.com](https://syncpad-4k8d.onrender.com)
+>
+> **Status:** Sprint 4 complete — **deployed and verified in production**: two users on two devices typing live in one pad, share-link joins, and restart recovery all confirmed against the live deployment. (The free-tier backend sleeps when idle, so the first request can take up to a minute.)
 
 ## Why this is hard
 
@@ -32,8 +34,11 @@ CRUD apps store *values*; SyncPad stores *operations* from many people racing ea
 - Documents created in Sprints 1–2 are migrated automatically: their stored plain text is seeded into CRDT history on first open
 - Deleting a document also deletes its CRDT log and snapshot; the dashboard shows collaborator counts
 
-**Planned**
-- **Sprint 4** — Deploy (Render + Vercel), the five-test gauntlet against production (same-spot typing, reconnect merge, 5+ users, paste storm, server restart), and launch
+**Sprint 4 (current)**
+- Everything in Sprints 1–3, plus production:
+- **Deployed** — backend (REST API + collab WebSockets on a single service) on Render, frontend on Vercel, data on MongoDB Atlas
+- **Production-verified** — live typing between two accounts on two devices in the same pad, share-link joins in a fresh browser, and refresh/restart persistence, all confirmed against the live deployment
+- SPA deep links (`/join/…`, `/editor/…`, `/dashboard`) served correctly on Vercel via rewrites, so shared links and refreshes work from anywhere
 
 ## Tech stack
 
