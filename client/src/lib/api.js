@@ -3,6 +3,18 @@
 // points at the deployed backend.
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
+// Base URL of the collab WebSocket endpoint (rooms live at
+// `${WS_BASE}/<documentId>`). Derived from the API URL in production;
+// in development the backend runs on port 5000 directly.
+export const WS_BASE =
+  import.meta.env.VITE_WS_URL ||
+  (import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "").replace(
+        /^http/,
+        "ws"
+      ) + "/collab"
+    : "ws://localhost:5000/collab");
+
 const TOKEN_KEY = "syncpad_token";
 
 export const tokenStore = {
@@ -49,4 +61,7 @@ export const api = {
   saveContent: (id, content) =>
     request(`/documents/${id}/content`, { method: "PUT", body: { content } }),
   deleteDocument: (id) => request(`/documents/${id}`, { method: "DELETE" }),
+  getShareLink: (id) => request(`/documents/${id}/share`),
+  joinDocument: (shareId) =>
+    request(`/documents/join/${shareId}`, { method: "POST" }),
 };

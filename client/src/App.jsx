@@ -6,6 +6,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import JoinPage from "./pages/JoinPage";
 
 // Monaco is a heavy bundle — load the editor route (and the editor)
 // only when a user actually opens a document.
@@ -28,6 +29,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/join/:shareId"
+          element={
+            <ProtectedRoute>
+              <JoinPage />
             </ProtectedRoute>
           }
         />

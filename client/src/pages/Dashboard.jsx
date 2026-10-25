@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [creating, setCreating] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
   const load = async () => {
     try {
@@ -55,6 +56,17 @@ export default function Dashboard() {
     } catch (err) {
       setError(err.message);
       setCreating(false);
+    }
+  };
+
+  const handleShare = async (doc) => {
+    try {
+      const data = await api.getShareLink(doc._id);
+      await navigator.clipboard.writeText(`${window.location.origin}${data.path}`);
+      setCopiedId(doc._id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -145,6 +157,11 @@ export default function Dashboard() {
               </div>
               <p className="mt-2 text-xs text-slate-500">
                 Edited {formatWhen(doc.updatedAt)}
+                {!doc.isOwner && (
+                  <span className="ml-2 rounded-full bg-fuchsia-500/15 px-2 py-0.5 font-medium text-fuchsia-300">
+                    Shared with you
+                  </span>
+                )}
               </p>
               <div className="mt-5 flex gap-2">
                 <button
@@ -153,9 +170,16 @@ export default function Dashboard() {
                 >
                   Open
                 </button>
-                <button onClick={() => handleDelete(doc)} className="btn-ghost">
-                  Delete
-                </button>
+                {doc.isOwner && (
+                  <>
+                    <button onClick={() => handleShare(doc)} className="btn-ghost">
+                      {copiedId === doc._id ? "✓ Copied" : "🔗 Share"}
+                    </button>
+                    <button onClick={() => handleDelete(doc)} className="btn-ghost">
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

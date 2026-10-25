@@ -13,6 +13,9 @@ const documentSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true, maxlength: 120 },
     language: { type: String, default: "javascript", trim: true },
     content: { type: String, default: "" },
+    // Sprint 2: anyone with the share link can join as a collaborator.
+    shareId: { type: String, unique: true, sparse: true },
+    collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

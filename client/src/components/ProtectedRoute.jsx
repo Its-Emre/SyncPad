@@ -1,8 +1,9 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -11,6 +12,11 @@ export default function ProtectedRoute({ children }) {
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace />;
+  // Remember where the user was headed (e.g. a share link) so login can
+  // send them straight there afterwards.
+  if (!user)
+    return (
+      <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />
+    );
   return children;
 }

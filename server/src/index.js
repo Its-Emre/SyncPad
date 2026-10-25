@@ -1,7 +1,9 @@
+import http from "node:http";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import { attachCollab } from "./collab.js";
 import authRoutes from "./routes/authRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 
@@ -39,6 +41,10 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
+// One HTTP server carries both the REST API and the collab WebSockets.
+const server = http.createServer(app);
+attachCollab(server);
+
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });

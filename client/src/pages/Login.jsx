@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Navbar";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,7 +19,7 @@ export default function Login() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate(next);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -68,7 +70,10 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-slate-400">
           New to SyncPad?{" "}
-          <Link to="/register" className="text-violet-400 hover:text-violet-300 font-medium">
+          <Link
+            to={`/register?next=${encodeURIComponent(next)}`}
+            className="text-violet-400 hover:text-violet-300 font-medium"
+          >
             Create an account
           </Link>
         </p>
