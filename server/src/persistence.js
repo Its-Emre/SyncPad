@@ -1,6 +1,14 @@
-import * as Y from "yjs";
+import { createRequire } from "node:module";
 import Document from "./models/Document.js";
 import { YUpdate, YSnapshot } from "./models/YDocStore.js";
+
+// IMPORTANT: load Yjs through the CommonJS build — the exact module
+// instance y-websocket's utils use. A top-level `import * as Y from
+// "yjs"` loads a SECOND copy of Yjs into the process; updates applied
+// to a y-websocket doc with the wrong copy silently fail to integrate
+// (the doc stays empty and its sync goes inert), which is what broke
+// restart recovery. One process, one Yjs.
+const Y = createRequire(import.meta.url)("yjs");
 
 // Persistence for live CRDT rooms, plugged into y-websocket through
 // setPersistence({ bindState, writeState }):
