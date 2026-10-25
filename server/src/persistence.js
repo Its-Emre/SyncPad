@@ -21,17 +21,33 @@ const LOAD_ORIGIN = "syncpad-persistence-load";
 // loaded state is compacted into a snapshot immediately.
 const COMPACT_AFTER_REPLAY = 500;
 
+// Values read back from MongoDB through .lean() arrive as BSON Binary
+// objects, not Buffers — and `new Uint8Array(binary)` silently produces
+// an EMPTY array, which Yjs then fails to decode ("Unexpected end of
+// array"). Normalise every stored value to a real Buffer here.
+const asBuffer = (value) => {
+  if (!value) return null;
+  if (value instanceof Uint8Array) return Buffer.from(value);
+  if (value.buffer instanceof Uint8Array) {
+    // BSON Binary: its internal buffer may be larger than the payload.
+    const len =
+      typeof value.length === "function" ? value.length() : value.buffer.length;
+    return Buffer.from(value.buffer.subarray(0, len));
+  }
+  return Buffer.from(value);
+};
+
 export const mongoStore = {
   async loadSnapshot(docId) {
     const snap = await YSnapshot.findOne({ docId }).select("state").lean();
-    return snap ? snap.state : null;
+    return snap ? asBuffer(snap.state) : null;
   },
   async loadUpdates(docId) {
     const rows = await YUpdate.find({ docId })
       .sort({ createdAt: 1, _id: 1 })
       .select("update")
       .lean();
-    return rows.map((r) => ({ id: String(r._id), update: r.update }));
+    return rows.map((r) => ({ id: String(r._id), update: asBuffer(r.update) }));
   },
   async appendUpdate(docId, update) {
     await YUpdate.create({ docId, update });
@@ -66,13 +82,16 @@ export const createPersistence = (store) => ({
     let logged = [];
     try {
       // 1) Rebuild: snapshot first, then the update log on top.
+      //    Values pass through asBuffer: a store may hand back BSON
+      //    Binary objects, and `new Uint8Array(binary)` is silently
+      //    empty — the exact failure this guards against.
       snapshot = await store.loadSnapshot(docName);
       if (snapshot) {
-        Y.applyUpdate(ydoc, new Uint8Array(snapshot), LOAD_ORIGIN);
+        Y.applyUpdate(ydoc, asBuffer(snapshot), LOAD_ORIGIN);
       }
       logged = await store.loadUpdates(docName);
       for (const entry of logged) {
-        Y.applyUpdate(ydoc, new Uint8Array(entry.update), LOAD_ORIGIN);
+        Y.applyUpdate(ydoc, asBuffer(entry.update), LOAD_ORIGIN);
       }
 
       // 2) A very long log gets compacted into a fresh snapshot here,
