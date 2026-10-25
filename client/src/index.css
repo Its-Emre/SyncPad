@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-ink-950 text-slate-200 font-sans antialiased;
+}
+
+::selection {
+  background-color: rgba(139, 92, 246, 0.4);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0b13;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b42;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b3b58;
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl bg-ink-800 border border-ink-600 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500 active:bg-violet-700 transition disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ink-600 bg-ink-800 px-4 py-2 text-sm font-medium text-slate-300 hover:border-violet-500/60 hover:text-white transition;
+  }
+  .card {
+    @apply rounded-2xl bg-ink-900 border border-ink-700 shadow-[0_8px_30px_rgba(0,0,0,0.35)];
+  }
+}
+
+/* Remote collaborator cursors (Sprint 2) get their colour from inline
+   styles set by the awareness layer; the name flag uses these hooks. */
+.remote-cursor-flag {
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 0 6px 6px 6px;
+  color: #fff;
+  white-space: nowrap;
+}
