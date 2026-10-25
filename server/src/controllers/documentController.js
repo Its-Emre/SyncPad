@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import Document from "../models/Document.js";
+import { YUpdate, YSnapshot } from "../models/YDocStore.js";
 
 // Content cap for the plain-text snapshot (Sprint 1). ~1M characters is
 // far beyond any real editing session and keeps a single document sane.
@@ -49,6 +50,7 @@ export const getDocuments = async (req, res) => {
       docs.map((d) => ({
         ...d,
         isOwner: String(d.owner) === String(req.user._id),
+        collaboratorCount: (d.collaborators || []).length,
       }))
     );
   } catch (error) {
@@ -139,6 +141,9 @@ export const deleteDocument = async (req, res) => {
     const doc = await ownedDocument(req);
     if (!doc) return res.status(404).json({ message: "Document not found" });
     await doc.deleteOne();
+    // Remove the room's CRDT history too — no orphaned logs/snapshots.
+    await YUpdate.deleteMany({ docId: String(doc._id) });
+    await YSnapshot.deleteOne({ docId: String(doc._id) });
     res.json({ message: "Document deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });

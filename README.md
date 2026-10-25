@@ -2,7 +2,7 @@
 
 A **real-time collaborative editor** for code and notes: multiple people type in the same document at the same time, see each other's cursors live, and the document never diverges — built on a **CRDT (Yjs)** and the **Monaco** editor (the engine inside VS Code).
 
-> **Status:** Sprint 2 complete — **real-time collaboration is live**: share a link, and collaborators type in the same document at the same time with live cursors, while a CRDT guarantees nobody's text is ever lost. CRDT persistence across server restarts is Sprint 3; deployment is Sprint 4.
+> **Status:** Sprint 3 complete — **rooms now survive anything**: every CRDT update is persisted to MongoDB, so a document is rebuilt exactly after a server restart, an offline editor's changes merge on reconnect, and nothing is lost. Deployment is Sprint 4.
 
 ## Why this is hard
 
@@ -24,9 +24,16 @@ CRUD apps store *values*; SyncPad stores *operations* from many people racing ea
 - **Share by link** — owners copy a join link; anyone who opens it (after logging in) becomes a collaborator and the pad appears in their dashboard
 - Room content is seeded from, and mirrored back to, MongoDB as plain text
 
+**Sprint 3 (current)**
+- Everything in Sprints 1–2, plus durability:
+- **CRDT persistence in MongoDB** via y-websocket's `setPersistence` hooks — every Yjs update is appended to an `ydoc_updates` log; when a room closes it is compacted into a single `ydoc_snapshots` state and the covered log is cleared
+- **Restart-proof rooms** — on open, a room is rebuilt by applying the snapshot and replaying any log entries on top; even a crash before compaction loses nothing, because the log alone is enough
+- **Offline edits merge** — disconnect, keep typing, reconnect: the sync protocol exchanges state vectors and both sides converge (no duplicates, no loss)
+- Documents created in Sprints 1–2 are migrated automatically: their stored plain text is seeded into CRDT history on first open
+- Deleting a document also deletes its CRDT log and snapshot; the dashboard shows collaborator counts
+
 **Planned**
-- **Sprint 3** — CRDT persistence in MongoDB (append-only update log + periodic snapshots), offline-edit → reconnect merging, the five-test gauntlet (same-spot typing, reconnect merge, 5+ users, paste storm, server restart)
-- **Sprint 4** — Deploy (Render + Vercel) and launch
+- **Sprint 4** — Deploy (Render + Vercel), the five-test gauntlet against production (same-spot typing, reconnect merge, 5+ users, paste storm, server restart), and launch
 
 ## Tech stack
 

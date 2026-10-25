@@ -157,6 +157,12 @@ export default function Dashboard() {
               </div>
               <p className="mt-2 text-xs text-slate-500">
                 Edited {formatWhen(doc.updatedAt)}
+                {doc.collaboratorCount > 0 && (
+                  <span className="ml-2 rounded-full bg-violet-500/15 px-2 py-0.5 font-medium text-violet-300">
+                    👥 {doc.collaboratorCount} collaborator
+                    {doc.collaboratorCount > 1 ? "s" : ""}
+                  </span>
+                )}
                 {!doc.isOwner && (
                   <span className="ml-2 rounded-full bg-fuchsia-500/15 px-2 py-0.5 font-medium text-fuchsia-300">
                     Shared with you
